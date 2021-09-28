@@ -22,6 +22,10 @@ public class RouteFinderService {
                 .build();
     }
 
+    private double calculateDistance() {
+
+    }
+
 
 
 

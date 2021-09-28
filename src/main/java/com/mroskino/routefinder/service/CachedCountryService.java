@@ -3,6 +3,7 @@ package com.mroskino.routefinder.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mroskino.routefinder.exception.NoDataException;
 import com.mroskino.routefinder.model.document.CountryDocument;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,7 +17,6 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -65,7 +65,7 @@ public class CachedCountryService {
                 response = FileCopyUtils.copyToString(reader);
             } catch (IOException e) {
                 log.error("Problem with reading offline data occurred.");
-                throw new RuntimeException("No data retrieved. Unable to operate.");
+                throw new NoDataException();
             }
         }
 
