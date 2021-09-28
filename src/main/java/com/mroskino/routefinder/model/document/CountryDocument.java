@@ -22,5 +22,5 @@ public class CountryDocument {
     private List<String> borders;
 
     @JsonProperty("latlng")
-    private List<Double> coordinates;
+    private double[] coordinates;
 }
