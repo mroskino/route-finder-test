@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.mroskino</groupId>
-    <artifactId>route-finder-test</artifactId>
+    <artifactId>route-finder</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>route-finder-test</name>
+    <name>route-finder</name>
     <properties>
         <java.version>11</java.version>
     </properties>
@@ -36,6 +36,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${project.parent.version}</version>
             </plugin>
         </plugins>
     </build>

@@ -1,10 +1,10 @@
-package com.mroskino.routefindertest;
+package com.mroskino.routefinder;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class RouteFinderTestApplicationTests {
+class RouteFinderApplicationTests {
 
     @Test
     void contextLoads() {
