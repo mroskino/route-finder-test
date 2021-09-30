@@ -49,6 +49,10 @@ public class CachedCountryService {
         return cache.get(code);
     }
 
+    public boolean existsCountryByCode(String code) {
+        return cache.containsKey(code);
+    }
+
     @PostConstruct
     private void fetchCountries() throws JsonProcessingException {
         String response = null;
