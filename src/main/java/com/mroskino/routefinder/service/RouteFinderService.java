@@ -11,9 +11,11 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,17 +32,18 @@ public class RouteFinderService {
         validateInputCountryCode(origin);
         validateInputCountryCode(destination);
 
-        CountryDocument originCountryDocument = cachedCountryService.getCountryByCode(origin);
-        CountryDocument destinationCountryDocument = cachedCountryService.getCountryByCode(destination);
+        var originCountry = cachedCountryService.getCountryByCode(origin);
+        var destinationCountry = cachedCountryService.getCountryByCode(destination);
 
-        var comparator = buildCountryComparator(destinationCountryDocument);
+        var comparator = new CountryComparator(destinationCountry);
         var route = new ArrayList<String>();
+        var visitedCountries = new HashSet<String>();
 
-        if (!expand(originCountryDocument, destinationCountryDocument, comparator, route)) {
+        if (!search(originCountry, destinationCountry, comparator, route, visitedCountries)) {
             throw new NoRouteFoundException();
         }
 
-        route.add(originCountryDocument.getCode());
+        route.add(originCountry.getCode());
         Collections.reverse(route);
 
         return RouteResponse.builder()
@@ -48,23 +51,27 @@ public class RouteFinderService {
                 .build();
     }
 
-    private boolean expand(CountryDocument origin, CountryDocument destination, Comparator<CountryDocument> comparator, List<String> route) {
+    private boolean search(CountryDocument origin, CountryDocument destination,
+                           Comparator<CountryDocument> comparator, List<String> route,
+                           Set<String> visitedCountries) {
 
         if (origin.getBorders().contains(destination.getCode())) {
             route.add(destination.getCode());
             return true;
         }
 
+        visitedCountries.add(origin.getCode());
+
         Queue<CountryDocument> queue = new PriorityQueue<>(comparator);
         queue.addAll(origin.getBorders().stream()
+                .filter(code -> !visitedCountries.contains(code))
                 .map(cachedCountryService::getCountryByCode)
                 .collect(Collectors.toList()));
 
         while (!queue.isEmpty()) {
-
             CountryDocument neighborCountry = queue.poll();
 
-            if (expand(neighborCountry, destination, comparator, route)) {
+            if (search(neighborCountry, destination, comparator, route, visitedCountries)) {
                 route.add(neighborCountry.getCode());
                 return true;
             }
@@ -77,10 +84,6 @@ public class RouteFinderService {
         if (!cachedCountryService.existsCountryByCode(code)) {
             throw new InvalidCountryException("Non existing country code " + code);
         }
-    }
-
-    private Comparator<CountryDocument> buildCountryComparator(CountryDocument destination) {
-        return new CountryComparator(destination);
     }
 
 }

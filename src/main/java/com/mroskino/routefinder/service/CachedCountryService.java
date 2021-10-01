@@ -68,7 +68,7 @@ public class CachedCountryService {
         }
 
         if (isEmpty(response)) {
-            log.warn("Retrieved online data are empty. Going to use offline copy.");
+            log.warn("No online data. Going to use offline copy.");
             try (Reader reader = new InputStreamReader(resourceFile.getInputStream(), UTF_8)) {
                 response = FileCopyUtils.copyToString(reader);
             } catch (IOException e) {
