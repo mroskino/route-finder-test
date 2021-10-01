@@ -12,4 +12,9 @@ public class ExceptionAdvise {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public void invalidCountryException() {
     }
+
+    @ExceptionHandler(value = {NoRouteFoundException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public void noRouteFoundException() {
+    }
 }

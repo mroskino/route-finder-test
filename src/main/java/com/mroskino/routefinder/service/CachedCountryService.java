@@ -53,6 +53,10 @@ public class CachedCountryService {
         return cache.containsKey(code);
     }
 
+    public int getCountryCount() {
+        return cache.size();
+    }
+
     @PostConstruct
     private void fetchCountries() throws JsonProcessingException {
         String response = null;
