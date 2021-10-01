@@ -23,14 +23,14 @@ class CalculationUtilityTest {
     @Test
     void testDistanceCalculationForCoordinateDistanceMoreThan180() {
         double[] origin = new double[2];
-        origin[0] = 0.0;
-        origin[1] = -175.0;
+        origin[0] = 0.5;
+        origin[1] = -179.5;
         double[] destination = new double[2];
-        destination[0] = 0.0;
-        destination[1] = 165.0;
+        destination[0] = -0.5;
+        destination[1] = 179.5;
 
         double distance = CalculationUtility.calculateDistance(origin, destination);
 
-        assertEquals(20.0, distance);
+        assertEquals(Math.sqrt(2), distance);
     }
 }
