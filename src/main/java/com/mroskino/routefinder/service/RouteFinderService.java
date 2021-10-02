@@ -40,7 +40,7 @@ public class RouteFinderService {
 
         visitedCountries.add(origin);
 
-        if (!search(originCountry, destinationCountry, route, visitedCountries, queue)) {
+        if (!searchRecursive(originCountry, destinationCountry, route, visitedCountries, queue)) {
             throw new NoRouteFoundException("No route found.");
         }
 
@@ -52,8 +52,8 @@ public class RouteFinderService {
                 .build();
     }
 
-    private boolean search(CountryDocument origin, CountryDocument destination, List<String> route,
-                           Set<String> visitedCountries, Queue<CountryDocument> queue) {
+    private boolean searchRecursive(CountryDocument origin, CountryDocument destination, List<String> route,
+                                    Set<String> visitedCountries, Queue<CountryDocument> queue) {
 
         if (origin.getBorders().contains(destination.getCode())) {
             route.add(destination.getCode());
@@ -78,7 +78,7 @@ public class RouteFinderService {
         while (!queue.isEmpty()) {
             var neighborCountry = queue.poll();
 
-            if (search(neighborCountry, destination, route, visitedCountries, queue)) {
+            if (searchRecursive(neighborCountry, destination, route, visitedCountries, queue)) {
                 route.add(neighborCountry.getCode());
                 return true;
             }
@@ -95,7 +95,7 @@ public class RouteFinderService {
 
     private static void validateNonEqual(String origin, String destination) {
         if (origin.equals(destination)) {
-            throw new NoRouteFoundException("Origin and destination are the same");
+            throw new InvalidCountryException("Origin and destination are the same");
         }
     }
 

@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.ToString;
 
 import java.util.Set;
 
@@ -14,7 +13,6 @@ import java.util.Set;
 @Builder
 @AllArgsConstructor
 @EqualsAndHashCode(of = "code")
-@ToString(of = "code")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CountryDocument {
 
