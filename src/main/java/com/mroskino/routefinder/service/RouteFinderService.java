@@ -5,12 +5,10 @@ import com.mroskino.routefinder.exception.NoRouteFoundException;
 import com.mroskino.routefinder.model.document.CountryDocument;
 import com.mroskino.routefinder.model.response.RouteResponse;
 import com.mroskino.routefinder.utility.CountryComparator;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -19,7 +17,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-@Slf4j
 public class RouteFinderService {
 
     private final CachedCountryService cachedCountryService;
@@ -29,6 +26,7 @@ public class RouteFinderService {
     }
 
     public RouteResponse findRoute(String origin, String destination) {
+        validateNonEqual(origin, destination);
         validateInputCountryCode(origin);
         validateInputCountryCode(destination);
 
@@ -38,9 +36,12 @@ public class RouteFinderService {
         var comparator = new CountryComparator(destinationCountry);
         var route = new ArrayList<String>();
         var visitedCountries = new HashSet<String>();
+        var queue = new PriorityQueue<>(comparator);
 
-        if (!search(originCountry, destinationCountry, comparator, route, visitedCountries)) {
-            throw new NoRouteFoundException();
+        visitedCountries.add(origin);
+
+        if (!search(originCountry, destinationCountry, route, visitedCountries, queue)) {
+            throw new NoRouteFoundException("No route found.");
         }
 
         route.add(originCountry.getCode());
@@ -51,27 +52,33 @@ public class RouteFinderService {
                 .build();
     }
 
-    private boolean search(CountryDocument origin, CountryDocument destination,
-                           Comparator<CountryDocument> comparator, List<String> route,
-                           Set<String> visitedCountries) {
+    private boolean search(CountryDocument origin, CountryDocument destination, List<String> route,
+                           Set<String> visitedCountries, Queue<CountryDocument> queue) {
 
         if (origin.getBorders().contains(destination.getCode())) {
             route.add(destination.getCode());
             return true;
         }
 
-        visitedCountries.add(origin.getCode());
-
-        Queue<CountryDocument> queue = new PriorityQueue<>(comparator);
-        queue.addAll(origin.getBorders().stream()
+        var unvisitedNeighbors = origin.getBorders().stream()
                 .filter(code -> !visitedCountries.contains(code))
                 .map(cachedCountryService::getCountryByCode)
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList());
+
+        if (unvisitedNeighbors.isEmpty()) {
+            return false;
+        }
+
+        visitedCountries.addAll(unvisitedNeighbors.stream()
+                .map(CountryDocument::getCode)
+                .collect(Collectors.toSet()));
+
+        queue.addAll(unvisitedNeighbors);
 
         while (!queue.isEmpty()) {
-            CountryDocument neighborCountry = queue.poll();
+            var neighborCountry = queue.poll();
 
-            if (search(neighborCountry, destination, comparator, route, visitedCountries)) {
+            if (search(neighborCountry, destination, route, visitedCountries, queue)) {
                 route.add(neighborCountry.getCode());
                 return true;
             }
@@ -83,6 +90,12 @@ public class RouteFinderService {
     private void validateInputCountryCode(String code) {
         if (!cachedCountryService.existsCountryByCode(code)) {
             throw new InvalidCountryException("Non existing country code " + code);
+        }
+    }
+
+    private static void validateNonEqual(String origin, String destination) {
+        if (origin.equals(destination)) {
+            throw new NoRouteFoundException("Origin and destination are the same");
         }
     }
 

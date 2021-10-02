@@ -6,20 +6,22 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 
-import java.util.List;
+import java.util.Set;
 
 @Getter
 @Builder
 @AllArgsConstructor
 @EqualsAndHashCode(of = "code")
+@ToString(of = "code")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CountryDocument {
 
     @JsonProperty("cca3")
     private String code;
 
-    private List<String> borders;
+    private Set<String> borders;
 
     @JsonProperty("latlng")
     private double[] coordinates;
