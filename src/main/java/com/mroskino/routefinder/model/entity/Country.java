@@ -1,4 +1,4 @@
-package com.mroskino.routefinder.model.document;
+package com.mroskino.routefinder.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -14,7 +14,7 @@ import java.util.Set;
 @AllArgsConstructor
 @EqualsAndHashCode(of = "code")
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CountryDocument {
+public class Country {
 
     @JsonProperty("cca3")
     private String code;

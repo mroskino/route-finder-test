@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mroskino.routefinder.exception.NoDataException;
-import com.mroskino.routefinder.model.document.CountryDocument;
+import com.mroskino.routefinder.model.entity.Country;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -28,7 +28,7 @@ public class CachedCountryService {
 
     @Value("classpath:countries.json")
     private Resource resourceFile;
-    private Map<String, CountryDocument> cache;
+    private Map<String, Country> cache;
 
     private final ObjectMapper objectMapper;
 
@@ -36,7 +36,7 @@ public class CachedCountryService {
         this.objectMapper = objectMapper;
     }
 
-    public CountryDocument getCountryByCode(String code) {
+    public Country getCountryByCode(String code) {
         return cache.get(code);
     }
 
@@ -48,14 +48,15 @@ public class CachedCountryService {
     private void fetchCountries() throws JsonProcessingException {
         String response;
 
-            try (Reader reader = new InputStreamReader(resourceFile.getInputStream(), UTF_8)) {
-                response = FileCopyUtils.copyToString(reader);
-            } catch (IOException e) {
-                log.error("Problem with reading source data occurred.");
-                throw new NoDataException();
-            }
+        try (Reader reader = new InputStreamReader(resourceFile.getInputStream(), UTF_8)) {
+            response = FileCopyUtils.copyToString(reader);
+        } catch (IOException e) {
+            log.error("Problem with reading source data occurred.");
+            throw new NoDataException();
+        }
 
-        cache = objectMapper.readValue(response, new TypeReference<List<CountryDocument>>(){}).stream()
-                .collect(Collectors.toMap(CountryDocument::getCode, identity()));
+        cache = objectMapper.readValue(response, new TypeReference<List<Country>>() {
+        }).stream()
+                .collect(Collectors.toMap(Country::getCode, identity()));
     }
 }
