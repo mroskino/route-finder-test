@@ -10,8 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.FileCopyUtils;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -23,26 +21,19 @@ import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.function.Function.identity;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 @Component
 @Slf4j
 public class CachedCountryService {
 
-    @Value("${routes.source.url}")
-    private String url;
-
     @Value("classpath:countries.json")
-    Resource resourceFile;
-
+    private Resource resourceFile;
     private Map<String, CountryDocument> cache;
 
     private final ObjectMapper objectMapper;
-    private final RestTemplate restTemplate;
 
-    public CachedCountryService(ObjectMapper objectMapper, RestTemplate restTemplate) {
+    public CachedCountryService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
-        this.restTemplate = restTemplate;
     }
 
     public CountryDocument getCountryByCode(String code) {
@@ -55,23 +46,14 @@ public class CachedCountryService {
 
     @PostConstruct
     private void fetchCountries() throws JsonProcessingException {
-        String response = null;
+        String response;
 
-        try {
-            response = restTemplate.getForEntity(url, String.class).getBody();
-        } catch (RestClientException ex) {
-            log.warn("Problem with fetching online data occurred.");
-        }
-
-        if (isEmpty(response)) {
-            log.warn("No online data. Going to use offline copy.");
             try (Reader reader = new InputStreamReader(resourceFile.getInputStream(), UTF_8)) {
                 response = FileCopyUtils.copyToString(reader);
             } catch (IOException e) {
-                log.error("Problem with reading offline data occurred.");
+                log.error("Problem with reading source data occurred.");
                 throw new NoDataException();
             }
-        }
 
         cache = objectMapper.readValue(response, new TypeReference<List<CountryDocument>>(){}).stream()
                 .collect(Collectors.toMap(CountryDocument::getCode, identity()));
