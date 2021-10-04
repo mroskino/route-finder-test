@@ -49,9 +49,9 @@ public class RouteFinderService {
         }
 
         var route = new ArrayList<String>();
-        var queue = new PriorityQueue<>(new CountryComparator(originCountry));
+        var queue = new PriorityQueue<>(new CountryComparator(countryPrices));
 
-        backTrackRecursive(queue, visitedCountries, countryPrices, destinationCountry, originCountry, route);
+        backTrackRecursive(queue, visitedCountries, destinationCountry.getBorders(), originCountry, route);
 
         route.add(destinationCountry.getCode());
 
@@ -67,7 +67,6 @@ public class RouteFinderService {
         visitedCountries.add(origin.getCode());
 
         if (origin.getBorders().contains(destination.getCode())) {
-            visitedCountries.add(destination.getCode());
             return true;
         }
 
@@ -97,36 +96,32 @@ public class RouteFinderService {
         return false;
     }
 
-    public boolean backTrackRecursive(Queue<CountryDocument> queue, Set<String> visitedCountries,
-                                      Map<String, double[]> countryPrices,
-                                      CountryDocument origin, CountryDocument destination,
+    public boolean backTrackRecursive(Queue<String> queue, Set<String> visitedCountries,
+                                      Set<String> borders, CountryDocument destination,
                                       List<String> route) {
 
-        if (origin.getBorders().contains(destination.getCode())) {
+        if (borders.contains(destination.getCode())) {
             route.add(destination.getCode());
             return true;
         }
 
-        var neighbors = origin.getBorders().stream()
+        var neighbors = borders.stream()
                 .filter(visitedCountries::contains)
-                .map(cachedCountryService::getCountryByCode)
                 .collect(Collectors.toList());
 
         if (neighbors.isEmpty()) {
             return false;
         }
 
-        neighbors.stream()
-                .map(CountryDocument::getCode)
-                .forEach(visitedCountries::remove);
+        neighbors.forEach(visitedCountries::remove);
 
         queue.addAll(neighbors);
 
         while (!queue.isEmpty()) {
 
-            var country = queue.poll();
+            var country = cachedCountryService.getCountryByCode(queue.poll());
 
-            if (backTrackRecursive(queue, visitedCountries, countryPrices, country, destination, route)) {
+            if (backTrackRecursive(queue, visitedCountries, country.getBorders(), destination, route)) {
                 route.add(country.getCode());
                 return true;
             }

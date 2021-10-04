@@ -1,24 +1,20 @@
 package com.mroskino.routefinder.utility;
 
-import com.mroskino.routefinder.model.document.CountryDocument;
-
 import java.util.Comparator;
+import java.util.Map;
 
-import static com.mroskino.routefinder.utility.CalculationUtility.calculateDistance;
+public class CountryComparator implements Comparator<String> {
 
-public class CountryComparator implements Comparator<CountryDocument> {
+    private final Map<String, double[]> countryPrices;
 
-    private final double[] destinationCoordinates;
-
-    public CountryComparator(CountryDocument destination) {
-        this.destinationCoordinates = destination.getCoordinates();
+    public CountryComparator(Map<String, double[]> countryPrices) {
+        this.countryPrices = countryPrices;
     }
 
     @Override
-    public int compare(CountryDocument cd1, CountryDocument cd2) {
+    public int compare(String country1, String country2) {
 
-        double difference = calculateDistance(cd1.getCoordinates(), destinationCoordinates)
-                - calculateDistance(cd2.getCoordinates(), destinationCoordinates);
+        double difference = countryPrices.get(country1)[0] - countryPrices.get(country2)[0];
 
         if (difference > 0) return 1;
         if (difference < 0) return -1;
