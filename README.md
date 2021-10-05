@@ -12,7 +12,7 @@ Switch to root project directory and run:
 
 `mvn package && java -jar target/route-finder-*.jar`
 
-##### Option#2 - Using your locally installed docker
+###### Option#2 - Using your locally installed docker
 
 Switch to root project directory and run:
 
